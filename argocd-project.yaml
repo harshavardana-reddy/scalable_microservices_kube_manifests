@@ -1,0 +1,75 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: microservices-project
+  namespace: argocd
+spec:
+  description: Microservices Demo Project
+
+  # Source repositories
+  sourceRepos:
+    - "https://github.com/harshavardana-reddy/kubernates_manifests_microservices.git"
+
+  # Destination clusters and namespaces
+  destinations:
+    - namespace: microservices-demo
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+
+  # Allowed Kubernetes resources
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: "networking.istio.io"
+      kind: Gateway
+    - group: "networking.istio.io"
+      kind: VirtualService
+    - group: "networking.istio.io"
+      kind: DestinationRule
+    - group: "networking.istio.io"
+      kind: EnvoyFilter
+
+  # Allowed namespaced resources
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Secret
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: PersistentVolumeClaim
+    - group: "apps"
+      kind: Deployment
+    - group: "autoscaling"
+      kind: HorizontalPodAutoscaler
+    - group: "networking.istio.io"
+      kind: VirtualService
+    - group: "networking.istio.io"
+      kind: DestinationRule
+    - group: "networking.istio.io"
+      kind: EnvoyFilter
+    - group: "rbac.authorization.k8s.io"
+      kind: Role
+    - group: "rbac.authorization.k8s.io"
+      kind: RoleBinding
+
+  # RBAC rules
+  roles:
+    - name: admin
+      description: Admin role for microservices project
+      policies:
+        - p, proj:microservices-project:admin, applications, *, microservices-project/*, allow
+        - p, proj:microservices-project:admin, repositories, *, *, allow
+      groups:
+        - microservices-admins
+
+    - name: developer
+      description: Developer role for microservices project
+      policies:
+        - p, proj:microservices-project:developer, applications, get, microservices-project/*, allow
+        - p, proj:microservices-project:developer, applications, sync, microservices-project/*, allow
+        - p, proj:microservices-project:developer, applications, update, microservices-project/*, allow
+      groups:
+        - microservices-developers

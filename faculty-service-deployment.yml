@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faculty-service
+  namespace: microservices-demo
+  labels:
+    app: faculty-service
+    version: v1
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: faculty-service
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: faculty-service
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4002"
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: faculty-service
+          image: harshareddy2024/faculty-service:latest
+          ports:
+            - containerPort: 4002
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: microservices-config
+                  key: SPRING_PROFILES_ACTIVE
+            - name: EUREKA_SERVER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: microservices-config
+                  key: EUREKA_SERVER_URL
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: microservices-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: microservices-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: microservices-config
+                  key: DB_NAME
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1024Mi"
+          readinessProbe:
+            httpGet:
+              path: /faculty/actuator/health
+              port: 4002
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /faculty/actuator/health
+              port: 4002
+            initialDelaySeconds: 45
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3

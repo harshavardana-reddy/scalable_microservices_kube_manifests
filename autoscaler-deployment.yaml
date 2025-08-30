@@ -1,0 +1,44 @@
+# autoscaler-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-autoscaler
+  namespace: microservices-demo
+  labels:
+    app: microservice-autoscaler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microservice-autoscaler
+  template:
+    metadata:
+      labels:
+        app: microservice-autoscaler
+    spec:
+      serviceAccountName: autoscaler-service-account
+      containers:
+      - name: autoscaler
+        image: harshareddy2024/autoscaler:latest
+        env:
+        - name: LATENCY_THRESHOLD_MS
+          value: "300"
+        - name: CPU_THRESHOLD
+          value: "0.7"
+        - name: RPS_THRESHOLD
+          value: "200"
+        - name: SCALE_OUT_FACTOR
+          value: "0.2"
+        - name: SCALE_IN_FACTOR
+          value: "0.15"
+        - name: MIN_REPLICAS
+          value: "2"
+        - name: MAX_REPLICAS
+          value: "50"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"

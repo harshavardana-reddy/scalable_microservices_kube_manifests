@@ -1,0 +1,118 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: microservices-monitor
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: prometheus
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: admin-service-monitor
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: admin-service
+  endpoints:
+    - port: http-admin
+      path: /admin/actuator/prometheus
+      interval: 30s
+      scrapeTimeout: 10s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: faculty-service-monitor
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: faculty-service
+  endpoints:
+    - port: http-faculty
+      path: /faculty/actuator/prometheus
+      interval: 30s
+      scrapeTimeout: 10s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: student-service-monitor
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: student-service
+  endpoints:
+    - port: http-student
+      path: /student/actuator/prometheus
+      interval: 30s
+      scrapeTimeout: 10s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: api-gateway-monitor
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: api-gateway
+  endpoints:
+    - port: http-apigateway
+      path: /actuator/prometheus
+      interval: 30s
+      scrapeTimeout: 10s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: eureka-server-monitor
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: eureka-server
+  endpoints:
+    - port: http-eureka
+      path: /actuator/prometheus
+      interval: 30s
+      scrapeTimeout: 10s

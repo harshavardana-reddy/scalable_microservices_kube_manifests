@@ -1,0 +1,117 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: admin-service
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  hosts:
+    - "admin-service"
+  http:
+    - route:
+        - destination:
+            host: admin-service
+            subset: v1
+          weight: 100
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: faculty-service
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  hosts:
+    - "faculty-service"
+  http:
+    - route:
+        - destination:
+            host: faculty-service
+            subset: v1
+          weight: 100
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: student-service
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  hosts:
+    - "student-service"
+  http:
+    - route:
+        - destination:
+            host: student-service
+            subset: v1
+          weight: 100
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: api-gateway
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - public-gateway
+  http:
+    - match:
+        - uri:
+            prefix: "/admin"
+      route:
+        - destination:
+            host: admin-service
+            port:
+              number: 4001
+    - match:
+        - uri:
+            prefix: "/faculty"
+      route:
+        - destination:
+            host: faculty-service
+            port:
+              number: 4002
+    - match:
+        - uri:
+            prefix: "/student"
+      route:
+        - destination:
+            host: student-service
+            port:
+              number: 4003
+    - match:
+        - uri:
+            prefix: "/eureka"
+      route:
+        - destination:
+            host: eureka-server
+            port:
+              number: 8761
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: eureka-server
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  hosts:
+    - "eureka-server"
+  http:
+    - route:
+        - destination:
+            host: eureka-server
+            subset: v1
+          weight: 100

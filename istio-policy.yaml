@@ -1,0 +1,59 @@
+apiVersion: networking.istio.io/v1beta1
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-filter
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  workloadSelector:
+    labels:
+      app: api-gateway
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.ratelimit
+          typed_config:
+            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+            type_url: type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
+            value:
+              domain: microservices
+              rate_limit_service:
+                grpc_service:
+                  envoy_grpc:
+                    cluster_name: rate_limit_cluster
+                transport_api_version: V3
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: EnvoyFilter
+metadata:
+  name: circuit-breaker-filter
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  workloadSelector:
+    labels:
+      app: api-gateway
+  configPatches:
+    - applyTo: CLUSTER
+      match:
+        context: SIDECAR_OUTBOUND
+        cluster:
+          service: "*.microservices-demo.svc.cluster.local"
+      patch:
+        operation: MERGE
+        value:
+          outlier_detection:
+            consecutive_5xx: 5
+            base_ejection_time: 30s
+            max_ejection_percent: 10

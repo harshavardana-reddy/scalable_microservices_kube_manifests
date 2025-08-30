@@ -1,0 +1,64 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: microservices-auth-policy
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  selector:
+    matchLabels:
+      app: api-gateway
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/microservices-demo/sa/default"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE"]
+            paths: ["/admin/*", "/faculty/*", "/student/*"]
+
+---
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: microservices-telemetry
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  tracing:
+    - randomSamplingPercentage: 10.0
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - match:
+            metric: REQUEST_COUNT
+            mode: CLIENT_AND_SERVER
+          tagOverrides:
+            source_canonical_service:
+              operation: UPSERT
+              value: "{{source.workload.name}}"
+            destination_canonical_service:
+              operation: UPSERT
+              value: "{{destination.workload.name}}"
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-services
+  namespace: microservices-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  hosts:
+    - "api.github.com"
+    - "registry-1.docker.io"
+  ports:
+    - number: 443
+      name: https-443
+      protocol: HTTPS
+  resolution: DNS
+  location: MESH_EXTERNAL
