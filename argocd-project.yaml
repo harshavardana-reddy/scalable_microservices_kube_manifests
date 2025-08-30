@@ -8,7 +8,7 @@ spec:
 
   # Source repositories
   sourceRepos:
-    - "https://github.com/harshavardana-reddy/kubernates_manifests_microservices.git"
+    - "https://github.com/harshavardana-reddy/scalable_microservices_kube_manifests.git"
 
   # Destination clusters and namespaces
   destinations:

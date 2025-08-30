@@ -8,7 +8,7 @@ metadata:
 spec:
   project: microservices-project
   source:
-    repoURL: "https://github.com/harshavardana-reddy/kubernates_manifests_microservices.git"
+    repoURL: "https://github.com/harshavardana-reddy/scalable_microservices_kube_manifests.git"
     path: .
     targetRevision: HEAD
   destination:
